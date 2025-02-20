@@ -85,6 +85,7 @@ def read_output():
 
 def monitor_gdb_output(req_data, cmd_args, name):
     try:
+        print('A')
         # Ejecutar el comando idf.py con GDB
         global process_holder
         process_holder[name] = subprocess.Popen(
