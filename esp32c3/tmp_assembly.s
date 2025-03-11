@@ -1,9 +1,12 @@
-#ARDUINO
+
+#
+# Creator (https://creatorsim.github.io/creator/)
+#
+
+# Sum of the first 10 numbers from 0 to 9
 .data
-    delay:  .word 1000
-    buttonPin: .word  4
-    ledpin: .word 5
-    buttonState:    .word   0
+	max: .byte 10
+
 .text
 
 main:
