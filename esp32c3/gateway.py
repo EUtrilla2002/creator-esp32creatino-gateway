@@ -278,7 +278,19 @@ def creator_build(file_in, file_out):
           fout.write("####################\n")
           continue
 
-        if (data[0] == 'ecall'):
+        if (data[0] == 'ecall' and BUILD_PATH == './creatino'):
+          fout.write("#### ecall ####\n")
+          fout.write("  addi sp, sp, -4\n")
+          fout.write("  sw ra, 0(sp)\n")
+
+          fout.write("  jal ra, cr_ecall\n")
+
+          fout.write("  lw ra, 0(sp)\n")
+          fout.write("  addi sp, sp, 4\n")
+          fout.write("####################\n")
+          continue
+        
+        elif (data[0] == 'ecall' and BUILD_PATH == './creator'):
           fout.write("#### ecall ####\n")
           fout.write("addi sp, sp, -128\n")
           fout.write("sw x1,  120(sp)\n")
@@ -331,6 +343,7 @@ def creator_build(file_in, file_out):
           fout.write("addi sp, sp, 128\n")
           fout.write("###############\n")
           continue
+
 
       fout.write(line)
 
@@ -520,15 +533,15 @@ def post_flash():
 
 # (3) POST /monitor -> flash
 # OJO!!!!!!! Hasta que no se añada el botón de debug, por ahora este es el de debug
-@app.route("/monitor", methods=["POST"])
+@app.route("/debug", methods=["POST"])
 @cross_origin()
 def post_debug():
   return do_debug_request(request)
 
-"""@app.route("/monitor", methods=["POST"])
+@app.route("/monitor", methods=["POST"])
 @cross_origin()
 def post_monitor():
-  return do_monitor_request(request)"""
+  return do_monitor_request(request)
 
 # (4) POST /job -> flash + monitor
 @app.route("/job", methods=["POST"])

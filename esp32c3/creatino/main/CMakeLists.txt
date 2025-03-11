@@ -1,7 +1,7 @@
 idf_component_register(
-    SRCS "creatino.cpp" "creatino.s" 
+    SRCS "creatino.cpp" 
+    "creatino.s" 
     "creator-esp.c"
-   
     "program.s" 
     "ecall.s"
     "io.s"
