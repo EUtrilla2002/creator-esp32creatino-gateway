@@ -186,12 +186,6 @@ cr_serial_parseFloat:
 .globl cr_serial_parseInt
 cr_serial_parseInt: 
     jr ra                 
-.globl cr_serial_print
-cr_serial_print:
-    ret
-.globl cr_serial_println
-cr_serial_println:
-    ret    
 .globl cr_serial_read
 cr_serial_read: 
     ret    

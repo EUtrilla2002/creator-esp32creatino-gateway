@@ -17,89 +17,148 @@
 uint32_t timeout_ms = portMAX_DELAY; //By default wait forever
 // Define the timeout in milliseconds
 
+//ecall imprimir numeros
+extern "C" void ecall_print_int(int option, int value) {
+    if (!Serial) {  // Verifica si Serial ya está inicializado
+        Serial.begin(115200);
+    } 
+    Serial.print(value);  // Imprime el valor como número
+    vTaskDelay(1);  
+}    
+            
+
 // ecall de imprimir + exit
-/*extern "C" void ecall_print(int option, void* value) { 
-    Serial.begin(115200);
+extern "C" void ecall_print(int option, void* value) {
+    if (!Serial) {  // Verifica si Serial ya está inicializado
+        Serial.begin(115200);
+    } 
+    if (value == nullptr) {  // Verifica si el puntero es nulo
+        Serial.println("Error: Puntero nulo.");
+        vTaskDelay(1);
+        return;
+    }
 
-    if (Serial.available()){
-        switch (option)
-        {
-            case 1:
-                // print_int
-                if (value) Serial.print(*static_cast<int*>(value));
-                break;
-            
-            case 4:
-                // print_string
-                if (value) Serial.print(static_cast<const char*>(value));
-                break;
-            
-            case 11:
-                // print_char
-                if (value) Serial.print(*static_cast<char*>(value));
-                break;
+    switch (option) {        
+        case 4:
+            // print_string
+            if (value == nullptr) { 
+                Serial.print("Error: Puntero nulo.");
+            } else {
+                //Serial.println("Es un char!!!");
+                Serial.print(static_cast<const char*>(value));
+            }
+            vTaskDelay(1);
+            break;
+        
+        case 11:
+            // print_char
+            Serial.print(*static_cast<char*>(value));
+            vTaskDelay(1);
+            break;
 
-            case 10:
-                // exit
-                return;            
+        case 10:
+            // exit
+            break;            
 
-            default:
-                Serial.println("Opción no válida");
-                break;
-        }
+        default:
+            Serial.print("Opción no válida");
+            vTaskDelay(1);
+            break;
     }
 }
 
-//read_int en ecall
-extern "C" int ecall_read() { 
-    Serial.begin(115200);
 
-    if (Serial.available()) {
-        int readValue = Serial.parseInt(SKIP_WHITESPACE);
-        if (value) {
-            return readValue;  
-        }        
+// read_int en ecall
+extern "C" int ecall_read_int() { 
+    if (!Serial) {  // Verifica si Serial ya está inicializado
+        Serial.begin(115200);
     }
-    else return 0; // No se leyó nada
+    char buffer[12];  // Buffer para almacenar los datos
+    int bytesRead = 0;
+    while (bytesRead < 11) { // Deja espacio para el carácter nulo
+        if (Serial.available() > 0) {
+            int value = Serial.read(); // Lee un entero
+            if (isdigit(value)) {      // Verifica si es un dígito
+                buffer[bytesRead] = value;  // Almacena el carácter en el buffer
+                Serial.print((char)value); //eco
+                bytesRead++;            // Incrementa el número de bytes leídos
+            }
+            else if (value == '-'){
+                buffer[bytesRead++] = value;
+                Serial.print(value);
+            }
+            else if (value == '\n' || value == '\r') {
+                buffer[bytesRead] = '\0'; // Termina la cadena
+                //Serial.print("\nValue read: ");
+                //Serial.println(atoi(buffer));
+                return atoi(buffer);
+                break;
+            }
+            vTaskDelay(1);
+        }
+        vTaskDelay(1); // Pequeño retraso para liberar la CPU
+        
+    }
+    return -1;  // Retorna un valor de error si no hay datos
+    
 }
 
 // ecall cuando tiene que leer caracteres o cadenas
-extern "C" char* ecall_read(int option, int size = 1) { 
-    Serial.begin(115200);
+extern "C" char* ecall_read(int option, char *buffer, int size) {
+    if (!Serial) {  // Verifica si Serial ya está inicializado
+        Serial.begin(115200);
+    }
+    //char buffer[size+1];  // Buffer para almacenar los datos
+    int bytesRead = 0;
+    size++; // Deja espacio para el carácter nulo
 
-    if (Serial.available()) {
-        switch (option)
-        {
-            case 8:
-                // read_string  
-                {
-                    if (size > 0) {
-                        char readString[size];
-                        Serial.readBytesUntil('\n', readString, size+1);  // Leer hasta salto de línea
-                        if (value) {
-                            return readString;  // Devolver la cadena leída
-                        }
+    switch (option) {
+        case 8: // read_string 
+            //Serial.print(bytesRead);
+            //Serial.printf("Espacio: %d bytes",size);       
+            while (bytesRead < size) { 
+                if (Serial.available() > 0) {
+                    char c = Serial.read(); // Lee un byte
+                    vTaskDelay(1); // Pequeño retraso para liberar la CPU
+                    if (c != 0){
+                        buffer[bytesRead++] = c; // Almacena el byte                   
+                        Serial.print(c); // Eco rápido
                     }
-                }   
-                break;
-
-            case 12:
-                // read_char (lee un solo carácter)
-                {
-                    char readChar;
-                    Serial.readBytesUntil('\n', &readChar, 1);  // Leer un solo carácter
-                    if (value) {
-                        return readChar;  
+                    // Termina si se detecta un salto de línea
+                    if (c == '\n' || c == '\r') {
+                        break;
                     }
                 }
-                break;         
+            }
+            buffer[bytesRead] = '\0'; // Termina la cadena
+            return buffer;    
 
-            default:
-                Serial.println("Opción no válida");
-                break;
-        }
+        case 12: // read_char (lee un solo carácter)
+            //char buffer[2];
+            while (bytesRead < 1) { // Deja espacio para el carácter nulo
+                if (Serial.available() > 0) {
+                    char c = Serial.read(); // Lee un byte
+                    if (c != 0){
+                        buffer[bytesRead++] = c; // Almacena el byte                   
+                        Serial.print(c); // Eco rápido
+                        break;
+                    }
+                    vTaskDelay(1); // Pequeño retraso para liberar la CPU
+                }
+            }              
+            buffer[1] = '\0';  // Convertirlo en cadena válida
+            return buffer;
+            
+
+        default:
+            Serial.println("Opción no válida");
+            vTaskDelay(1);
+            return nullptr;
     }
-}*/
+
+    return nullptr; // Retorno seguro en caso de error
+}
+
 
 extern "C" void serial_begin(int baudrate) {
     Serial.begin(baudrate);

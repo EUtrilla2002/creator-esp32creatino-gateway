@@ -1,23 +1,9 @@
-
-#
-# Creator (https://creatorsim.github.io/creator/)
-#
-
+#ARDUINO
 .data
- 
-   byte:       .byte    12
-    
-   .align 1
-   half:       .half    34
-    
-   .align 2
-   word:       .word   -5678
-   float:      .float   456.322
-   double:     .double  9741.34
-   stringz:    .string  "This is a string"
-   string:     .string  "This is another string"
-   space:      .zero 32
-   
+    delay:  .word 1000
+    buttonPin: .word  4
+    ledpin: .word 5
+    buttonState:    .word   0
 .text
 
 main:

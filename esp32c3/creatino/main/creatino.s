@@ -17,20 +17,69 @@
 # Variables globales
 .text
 # Sustituto de ecall
-/*.globl cr_ecall
-.extern ecall_fun 
-cr_ecall:
-    mv a1, a0
-    mv a0, a7
-    addi sp, sp, -4       # Reservar espacio en el stack
-    sw ra, 0(sp)
-    jal ra, ecall_fun
-    lw ra, 0(sp)          # Restaurar el registro RA desde el stack
-    addi sp, sp, 4      # Liberar el espacio del stack
-    jr ra
-    ret
-*/
+.globl cr_ecall
+.extern ecall_print_int
+.extern ecall_print
+.extern ecall_read_int
+.extern ecall_read
 
+cr_ecall:
+    mv a2, a1         # Guardar a1 (segundo argumento) en a2
+    mv a1, a0         # Guardar a0 en a1 (primer argumento)
+    mv a0, a7         # Mover el código de llamada a a0
+
+    # Reservar espacio en el stack para t4 y ra (2 registros)
+    addi sp, sp, -12
+    sw t4, 8(sp)
+    sw t0, 4(sp)
+    sw ra, 0(sp)
+
+    # Comparar código de llamada con cada caso
+    li t4, 1
+    beq a0, t4, call_print_int
+    li t4, 4
+    beq a0, t4, call_print
+    li t4, 11
+    beq a0, t4, call_print
+    li t4, 10
+    beq a0, t4, call_print
+
+    li t4, 5
+    beq a0, t4, call_read_int
+    li t4, 8
+    beq a0, t4, call_read
+    li t4, 12
+    beq a0, t4, call_read
+
+    # Si no es un código válido, salir
+    j exit_ecall  
+
+call_print_int:
+    jal ra, ecall_print_int
+    j exit_ecall
+
+call_print:
+    jal ra, ecall_print
+    j exit_ecall
+
+call_read_int:
+    jal ra, ecall_read_int
+    j exit_ecall
+
+call_read:
+    jal ra, ecall_read
+    mv a1,a0
+    li a0, 4
+    jal ra, ecall_print  #Make the echo from read stay in the monitor
+    j exit_ecall
+
+exit_ecall:
+    # Restaurar registros y salir
+    lw ra, 0(sp)
+    lw t0, 4(sp)
+    lw t4, 8(sp)
+    addi sp, sp, 12
+    jr ra
 
 
 # Basic TODO)
@@ -729,7 +778,7 @@ cr_serial_println: #TODO
     jal ra,cr_serial_print 
     lw ra, 0(sp)     # Recupera el valor de ra
     addi sp, sp, 4
-    jr ra*/ 
+    jr ra */
 
 .globl cr_serial_parseInt #ATM Serial.parseint(SKIP_NONE)
 cr_serial_parseInt: #Lee números
