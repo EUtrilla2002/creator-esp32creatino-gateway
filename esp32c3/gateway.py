@@ -246,10 +246,11 @@ def do_get_form(request):
 # Change to ArduinoMode
 def do_arduino_mode(request):
   req_data = request.get_json()
+  statusChecker = req_data.get('state')
   req_data['status'] = ''
   global arduino
-  global BUILD_PATH
-  arduino = not arduino    
+  arduino = not statusChecker
+  print(f"Estado checkbox: {arduino} de tipo {type(statusChecker)}")    
   return  req_data
  
 def check_build():
