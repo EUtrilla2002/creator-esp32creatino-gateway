@@ -1,11 +1,9 @@
 
 #
-# Creator (https://creatorsim.github.io/creator/)
+# ARCOS.INF.UC3M.ES
+# BY-NC-SA (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)
 #
 
-# Sum of the first 10 numbers from 0 to 9
-.data
-	max: .byte 10
 
 .text
 
