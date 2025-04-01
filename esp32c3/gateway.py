@@ -303,19 +303,19 @@ def kill_all_processes(process_name):
         logging.error(f"Ocurrió un error inesperado: {e}")
         return result.returncode 
 
- def is_jtag_connected():
-    """
-    Verifica si el dispositivo JTAG está conectado.
-    """
-    try:
-        # Usa un comando como `lsusb` para verificar dispositivos USB conectados
-        result = subprocess.run(['lsusb'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if "JTAG" in result.stdout:  # Cambia "JTAG" por el identificador específico de tu dispositivo
-            return True
-        return False
-    except Exception as e:
-        logging.error(f"Error checking JTAG connection: {str(e)}")
-        return False   
+#  def is_jtag_connected():
+#     """
+#     Verifica si el dispositivo JTAG está conectado.
+#     """
+#     try:
+#         # Usa un comando como `lsusb` para verificar dispositivos USB conectados
+#         result = subprocess.run(['lsusb'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#         if "JTAG" in result.stdout:  # Cambia "JTAG" por el identificador específico de tu dispositivo
+#             return True
+#         return False
+#     except Exception as e:
+#         logging.error(f"Error checking JTAG connection: {str(e)}")
+#         return False   
 
 
 def do_debug_request(request):
