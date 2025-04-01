@@ -143,6 +143,7 @@ def read_gdbgui_state(req_data):
 
 
 def read_openocd_output(req_data):
+    req_data['status'] = ''
     global stop_event
     """Verifica el estado del proceso"""
     global process_holder
@@ -153,6 +154,7 @@ def read_openocd_output(req_data):
     # Si cualquiera de los procesos no está corriendo, salir del bucle
     if not openocd:
         print("ERROR: Los procesos necesarios no están corriendo.")
+        req_data['status'] = "ERROR: Los procesos necesarios no están corriendo."
         return None
     while True:
       # Leer stderr
@@ -281,74 +283,122 @@ def kill_all_processes(process_name):
         commands = f"ps aux | grep '[{process_name[0]}]{process_name[1:]}' | awk '{{print $2}}' | xargs kill -9"
         
         # Ejecuta el comando
-        result = subprocess.run(commands, shell=True, capture_output=True, timeout=120, check=False)
-        
+        result = subprocess.run(commands, shell=True, capture_output=True, timeout=120, check=False)  
         # Verifica si hubo algún error en el proceso
         if result.returncode != 0:
             logging.error(f"Error al intentar matar los procesos {process_name}. Salida: {result.stderr.decode()}")        
         else:
             logging.info(f"Todos los procesos {process_name} han sido eliminados.")
+        return result.returncode 
     
     except subprocess.TimeoutExpired as e:
         logging.error(f"El proceso excedió el tiempo de espera: {e}")
+        return result.returncode 
     
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al ejecutar el comando: {e}")
+        return result.returncode 
     
     except Exception as e:
         logging.error(f"Ocurrió un error inesperado: {e}")
+        return result.returncode 
+
+ def is_jtag_connected():
+    """
+    Verifica si el dispositivo JTAG está conectado.
+    """
+    try:
+        # Usa un comando como `lsusb` para verificar dispositivos USB conectados
+        result = subprocess.run(['lsusb'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if "JTAG" in result.stdout:  # Cambia "JTAG" por el identificador específico de tu dispositivo
+            return True
+        return False
+    except Exception as e:
+        logging.error(f"Error checking JTAG connection: {str(e)}")
+        return False   
 
 
 def do_debug_request(request):
     global stop_event
     global process_holder
+    req_data = {'status': ''}
     try:
         req_data = request.get_json()
-        target_device = req_data['target_port']
-        req_data['status'] = ''
-        
+        target_device = req_data.get('target_port', None)
+        if not target_device:
+            req_data['status'] = 'Error: target_port is missing in the request.\n'
+            return jsonify(req_data)
+
         error = check_build()
+        if error != 0:
+            req_data['status'] += "Build error.\n"
+            return jsonify(req_data)
 
-        if error == 0:
-            if 'openocd' in process_holder:
-                logging.info('Killing OpenOCD')
-                kill_all_processes("openocd")
-                process_holder.pop('openocd', None)
+        # Kill OpenOCD if running
+        if 'openocd' in process_holder:
+            logging.info('Killing OpenOCD')
+            error = kill_all_processes("openocd")
+            process_holder.pop('openocd', None)
+            if error != 0:
+                req_data['status'] += 'Error killing OpenOCD.\n'
+                return jsonify(req_data)
 
-            if 'gdbgui' in process_holder:
-                logging.info('Killing GDBGUI')
-                kill_all_processes("gdbgui")
-                process_holder.pop('gdbgui', None)
+        # Kill GDBGUI if running
+        if 'gdbgui' in process_holder:
+            logging.info('Killing GDBGUI')
+            error = kill_all_processes("gdbgui")
+            process_holder.pop('gdbgui', None)
+            if error != 0:
+                req_data['status'] += 'Error killing GDBGUI.\n'
+                return jsonify(req_data)
 
+        # Start OpenOCD thread
+        try:
             openocd_thread = start_openocd_thread(req_data)
-            while openocd_thread is None:
-                time.sleep(1)
-                openocd_thread = start_openocd_thread(req_data)
+            if openocd_thread is None:
+                raise RuntimeError("Failed to start OpenOCD thread.")
+        except Exception as e:
+            req_data['status'] += f"Error starting OpenOCD thread: {str(e)}\n"
+            logging.error(f"Error starting OpenOCD thread: {str(e)}")
+            return jsonify(req_data)
 
+        # Start GDBGUI thread
+        try:
             gdbgui_thread = start_gdbgui_thread(req_data)
-            while gdbgui_thread is None:
-                time.sleep(1)
-                gdbgui_thread = start_gdbgui_thread(req_data)
+            if gdbgui_thread is None:
+                raise RuntimeError("Failed to start GDBGUI thread.")
+        except Exception as e:
+            req_data['status'] += f"Error starting GDBGUI thread: {str(e)}\n"
+            logging.error(f"Error starting GDBGUI thread: {str(e)}")
+            return jsonify(req_data)
 
+        # Wait for both processes to be registered
+        try:
             while not ("gdbgui" in process_holder and "openocd" in process_holder):
                 time.sleep(1)
-            #---restart monitor
+        except Exception as e:
+            req_data['status'] += f"Error waiting for processes to start: {str(e)}\n"
+            logging.error(f"Error waiting for processes to start: {str(e)}")
+            return jsonify(req_data)
+
+        # Start monitoring thread
+        try:
             stop_event = threading.Event()
             logging.info('Starting monitor thread...')
             monitor_thread = start_monitoring_thread(req_data)
             if monitor_thread is None:
-                req_data['status'] += "Error starting monitor thread\n"
-            print("Monitor thread started")
-            
+                raise RuntimeError("Failed to start monitor thread.")
+        except Exception as e:
+            req_data['status'] += f"Error starting monitor thread: {str(e)}\n"
+            logging.error(f"Error starting monitor thread: {str(e)}")
+            return jsonify(req_data)
 
-            
-        else:
-            req_data['status'] += "Build error\n"
-            
+        req_data['status'] += "Debug process started successfully.\n"
+
     except Exception as e:
-        req_data['status'] += str(e) + '\n'
+        req_data['status'] += f"Unexpected error: {str(e)}\n"
         logging.error(f"Exception in do_debug_request: {e}")
-    
+
     return jsonify(req_data)
 
 ########----------
@@ -694,7 +744,9 @@ def do_stop_monitor_request(request):
     req_data = request.get_json()
     req_data['status'] = ''
     print("Killing Monitor")
-    kill_all_processes("idf.py")
+    error = kill_all_processes("idf.py")
+    if error == 0:
+      req_data['status'] += 'Stopped Monitor\n' 
     
 
   except Exception as e:
