@@ -708,7 +708,7 @@ def do_flash_request(request):
         
     elif error == 0 and BUILD_PATH == './creatino' and ACTUAL_TARGET != target_board:
         print("ACTUAL_TARGET: ", ACTUAL_TARGET)
-        ACTUAL_TARGET = target_board
+        # ACTUAL_TARGET = target_board
         print(f"File path: {BUILD_PATH}/sdkconfig")
         
         # Cambiar la frecuencia de FreeRTOS
@@ -717,18 +717,25 @@ def do_flash_request(request):
             print("Error al modificar la frecuencia de FreeRTOS")
             raise Exception
         print("Frecuencia de FreeRTOS modificada correctamente")
-        time.sleep(1)
         
-        error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
-        if error != 0:
-            print("Error al borrar el directorio de build")
-            raise Exception
+        # error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
+        # if error != 0:
+        #     print("Error al borrar el directorio de build")
+        #     raise Exception
         
+        try:
+          error = do_cmd_output(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
+        except Exception as e: 
+          print(f"Error al cambiar el target board:{e}")
+          raise Exception  
 
-        error = do_cmd_output(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
+        error = do_cmd(req_data, ['sed', '-i', 's/^CONFIG_FREERTOS_HZ=.*/CONFIG_FREERTOS_HZ=1000/', f'{BUILD_PATH}/sdkconfig'])
         if error != 0:
-            print(f"Error al establecer el target: {target_board}")
+            print("Error al modificar la frecuencia de FreeRTOS")
             raise Exception
+        print("Frecuencia de FreeRTOS modificada correctamente")
+        ACTUAL_TARGET = target_board
+        
         
     error = do_cmd_output(req_data, [
         'sed', '-i',
@@ -756,6 +763,7 @@ def do_flash_request(request):
 
   except Exception as e:
     req_data['status'] += str(e) + '\n'
+    print("Error in do_flash_request: ", str(e))
 
   return jsonify(req_data)
 
@@ -895,7 +903,7 @@ def post_fullclean_flash():
 def post_arduino_mode():
   return do_arduino_mode(request)
 
-signal.signal(signal.SIGINT, handle_exit)
+#signal.signal(signal.SIGINT, handle_exit)
 
 
 # Run
