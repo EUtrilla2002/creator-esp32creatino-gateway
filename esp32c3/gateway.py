@@ -91,7 +91,8 @@ def check_gdb_connection():
     try:
         lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
-        return output
+        #print("Output: ", output.decode())
+        return output.decode()
     except subprocess.TimeoutExpired:
         lsof.kill()
         output, errs = lsof.communicate()
@@ -189,7 +190,7 @@ def check_uart_connection():
         output, _ = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
         if output:
             output_text = output.decode(errors="ignore")
-            if "ttyUSB" in output_text:
+            if "/dev/ttyUSB0" in output_text:
                 logging.info("Puerto UART encontrado.")
                 return True
             else:
@@ -240,26 +241,26 @@ def start_openocd_thread(req_data):
         logging.error(f"Error starting OpenOCD: {str(e)}")
         return None
     
-def check_gdb_connection():
-    """ Verifica si gdb está escuchando en el puerto 3333 y actúa si encuentra 'riscv32-e' """
-    command = ["lsof", "-i", ":3333"]
-    try:
-        lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
-        if output:
-            output_text = output.decode(errors="ignore")
-            if "riscv32-e" in output_text:
-                logging.warning("'riscv32-e' detectado en el puerto 3333. Ejecutando kill_all_processes.")
-                kill_all_processes("riscv32-e")
-            return True
-        return None
-    except subprocess.TimeoutExpired:
-        lsof.kill()
-        output, errs = lsof.communicate()
-        return None
-    except Exception as e:
-        logging.error(f"Error al verificar la conexión GDB: {e}")
-        return None
+# def check_gdb_connection():
+#     """ Verifica si gdb está escuchando en el puerto 3333 y actúa si encuentra 'riscv32-e' """
+#     command = ["lsof", "-i", ":3333"]
+#     try:
+#         lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#         output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
+#         if output:
+#             output_text = output.decode(errors="ignore")
+#             if "riscv32-e" in output_text:
+#                 logging.warning("'riscv32-e' detectado en el puerto 3333. Ejecutando kill_all_processes.")
+#                 kill_all_processes("riscv32-e")
+#             return True
+#         return False
+#     except subprocess.TimeoutExpired:
+#         lsof.kill()
+#         output, errs = lsof.communicate()
+#         return None
+#     except Exception as e:
+#         logging.error(f"Error al verificar la conexión GDB: {e}")
+#         return None
   
 
 def start_gdbgui(req_data):
@@ -275,18 +276,20 @@ def start_gdbgui(req_data):
         except Exception as e:
             req_data['status'] += f"Error during GDB setup: {e}\n"
             return jsonify(req_data)
-        # try:
-        #    output = check_gdb_connection()
-        #    while output is None:
-        #       time.sleep(1)
-        #       output = check_gdb_connection()
-        # except Exception as e:
-        #     req_data['status'] += f"Error during GDB setup: {e}\n"
-        #     return jsonify(req_data)
+        try:
+            output = check_gdb_connection()
+            while "riscv32-e" not in output:
+                time.sleep(1)
+                output = check_gdb_connection()                
+            logging.warning("'riscv32-e' detectado en el puerto 3333. Ejecutando kill_all_processes.")
+            kill_all_processes("riscv32-e")   
+        except Exception as e:
+            req_data['status'] += f"Error during GDB setup: {e}\n"
+            return jsonify(req_data)
         # Lanzar GDBGUI con monitor
-        time.sleep(5)
-        kill_all_processes("riscv32-e")
-        time.sleep(5)
+        # time.sleep(5)
+        # kill_all_processes("riscv32-e")
+        # time.sleep(5)
         if check_uart_connection:
           logging.info("Starting GDBGUI...")
           gdbgui_cmd = ['idf.py', '-C', BUILD_PATH, 'gdbgui', '-x', route, 'monitor']
@@ -297,7 +300,7 @@ def start_gdbgui(req_data):
                   stderr=sys.stderr,
                   text=True
               )
-              if process_holder['gdbgui'].returncode != 0:
+              if process_holder['gdbgui'].returncode != -9 and process_holder['gdbgui'].returncode != 0:
                   logging.error(f"Command failed with return code {process_holder['gdbgui'].returncode}")
 
           except subprocess.CalledProcessError as e:
@@ -399,6 +402,9 @@ def do_debug_request(request):
             if not check_jtag_connection():
                 req_data['status'] += "No JTAG found\n"
                 return jsonify(req_data)
+            # if not check_uart_connection():
+            #     req_data['status'] += "No UART found\n"
+            #     return jsonify(req_data)
             #Start openocd
             openocd_thread = start_openocd_thread(req_data)
             while openocd_thread is None:
