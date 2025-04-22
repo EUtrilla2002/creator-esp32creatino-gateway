@@ -1,11 +1,9 @@
-#ARDUINO
 
-.data
-    delay:  .word 1000
-    buttonPin: .word  4
-    ledpin: .word 5
-    buttonState:    .word   0
-    msg:    .string     "Button Pressed!"
+#
+# ARCOS.INF.UC3M.ES
+# BY-NC-SA (https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)
+#
+
 
 .text
 setup:
