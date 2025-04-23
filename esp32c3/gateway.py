@@ -67,7 +67,7 @@ def handle_exit(sig, frame):
     except Exception as e:
       print(f"ERROR:{e} ")
 
-####----Full Clean----
+####----Cleaning functions----
 def do_fullclean_request(request):
   try:
     req_data = request.get_json()
@@ -81,6 +81,23 @@ def do_fullclean_request(request):
       do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
   except Exception as e:
     req_data['status'] += str(e) + '\n'
+
+def do_eraseflash_request(request):
+  try:
+    req_data = request.get_json()
+    target_device      = req_data['target_port']
+    req_data['status'] = ''
+    global BUILD_PATH
+    BUILD_PATH = './creator'
+    error = check_build()
+    # flashing steps...
+    if error == 0:
+      error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'-p',target_device,'erase-flash'])
+    if error == 0:
+       req_data['status'] += 'Erase flash done. Please, unplug and plug the cable(s) again\n'
+         
+  except Exception as e:
+    req_data['status'] += str(e) + '\n'    
 
   return jsonify(req_data) 
 
@@ -847,8 +864,7 @@ def post_flash():
 
   return do_flash_request(request)
 
-# (3) POST /monitor -> flash
-# OJO!!!!!!! Hasta que no se añada el botón de debug, por ahora este es el de debug
+# (3) POST /debug -> debug
 @app.route("/debug", methods=["POST"])
 @cross_origin()
 def post_debug():
@@ -881,6 +897,12 @@ def post_stop_monitor():
 @cross_origin()
 def post_fullclean_flash():
   return do_fullclean_request(request)
+
+# (6) POST /fullclean -> clean
+@app.route("/eraseflash", methods=["POST"])
+@cross_origin()
+def post_erase_flash():
+  return do_eraseflash_request(request)
 
 # (7) POST /arduinoMode-> cancel
 @app.route("/arduinoMode", methods=["POST"])
