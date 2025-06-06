@@ -94,6 +94,7 @@ def do_eraseflash_request(request):
     BUILD_PATH = './creator'
     error = check_build()
     # flashing steps...
+
     if error == 0:
       error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'-p',target_device,'erase-flash'])
     if error == 0:
@@ -394,6 +395,8 @@ def check_build():
     print("Error adapting assembly file: ", str(e))
     return -1  
 
+class CrFunctionNotAllowed(Exception):
+    pass
 # Adapt assembly file...
 def creator_build(file_in, file_out):
   try:
@@ -411,6 +414,10 @@ def creator_build(file_in, file_out):
     for line in fin:
       data = line.strip().split()
       if (len(data) > 0):
+        if any(token.startswith('cr_') for token in data):
+            #logging.debug(f"Uso de función cr_ detectado: {data} en modo {BUILD_PATH}")
+            if BUILD_PATH == './creator':
+                raise CrFunctionNotAllowed()
         if (data[0] == 'rdcycle'):
           fout.write("#### rdcycle" + data[1] + "####\n")
           fout.write("addi sp, sp, -8\n")
@@ -501,6 +508,9 @@ def creator_build(file_in, file_out):
     fout.close()
     return 0
 
+  except CrFunctionNotAllowed:
+    print("Error: cr_ functions are not supported in this mode.")
+    return 2
   except Exception as e:
     print("Error adapting assembly file: ", str(e))
     return -1
@@ -523,6 +533,18 @@ def do_monitor_request(request):
       logging.debug('Killing GDBGUI')
       kill_all_processes("gdbgui")
       process_holder.pop('gdbgui', None)
+
+    error = check_uart_connection()
+    if error != 0:
+      raise Exception("No UART port found") 
+    
+    
+    build_dir = BUILD_PATH + '/build'
+    logging.info(f"Checking for build directory: {build_dir}")
+    if not os.listdir(build_dir):
+      raise Exception("No build found. Please, build the program first.") 
+    logging.info("Build directory is not empty, proceeding with monitor...")
+     
 
     error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH,'-p', target_device, 'monitor']) 
     if error == 0:
@@ -600,18 +622,27 @@ def do_flash_request(request):
 
     # transform th temporal assembly file
     filename= BUILD_PATH + '/main/program.s'
-    print("filename to transform in do_flash_request: ", filename)
+    logging.debug("filename to transform in do_flash_request: ", filename)
     error = creator_build('tmp_assembly.s', filename)
-    if error != 0:
-      req_data['status'] += 'Error adapting assembly file...\n'
+    if error == 2:
+      logging.info("cr_ functions are not supported in this mode.")
+      raise Exception("cr_ functions are not supported in this mode.")
+    elif error != 0:
+      raise Exception
 
     # flashing steps...
     if error == 0 :
       error = check_uart_connection()
+    if error != 0:
+      req_data['status'] += 'No UART port found.\n'
+      raise  Exception("No UART port found")
+     
     if error == 0 and BUILD_PATH == './creator':
       error = do_cmd(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
+    # Check if sdkconfig has gone   
     if error == 0 and BUILD_PATH == './creator':
       error = do_cmd(req_data, ['idf.py','-C', BUILD_PATH,'set-target', target_board])
+      sdkconfig_path = os.path.join(BUILD_PATH, "sdkconfig")
       if error == 0:
         error = do_cmd_output(req_data, [
             'sed', '-i',
@@ -619,7 +650,7 @@ def do_flash_request(request):
             f'{BUILD_PATH}/sdkconfig'
         ])
         if error != 0:
-          print("Error during Memory Disable")
+          logging.error("Error during Memory Disable")
           raise Exception
         error = do_cmd_output(req_data, [
             'sed', '-i',
@@ -634,6 +665,27 @@ def do_flash_request(request):
         print("ACTUAL_TARGET: ", ACTUAL_TARGET)
         # ACTUAL_TARGET = target_board
         print(f"File path: {BUILD_PATH}/sdkconfig")
+         # Check if sdkconfig has gone 
+        sdkconfig_path = os.path.join(BUILD_PATH, "sdkconfig")
+
+        # Paso 1: Establecer el target primero
+        error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
+        if error != 0:
+            raise Exception("No se pudo establecer el target")
+
+        # Paso 2: Crear sdkconfig.defaults
+        defaults_path = os.path.join(BUILD_PATH, "sdkconfig.defaults")
+        with open(defaults_path, "w") as f:
+            f.write(
+                "CONFIG_FREERTOS_HZ=1000\n"
+                "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set\n"
+                "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set\n"
+            )
+
+        # Paso 3: Ejecutar build (esto generará sdkconfig usando sdkconfig.defaults)
+        error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'build'])
+        if error != 0:
+            raise Exception("Fallo al generar sdkconfig con build")
         
         # Cambiar la frecuencia de FreeRTOS
         error = do_cmd(req_data, ['sed', '-i', 's/^CONFIG_FREERTOS_HZ=.*/CONFIG_FREERTOS_HZ=1000/', f'{BUILD_PATH}/sdkconfig'])
@@ -641,11 +693,6 @@ def do_flash_request(request):
             print("Error al modificar la frecuencia de FreeRTOS")
             raise Exception
         print("Frecuencia de FreeRTOS modificada correctamente")
-        
-        # error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
-        # if error != 0:
-        #     print("Error al borrar el directorio de build")
-        #     raise Exception
         
         try:
           error = do_cmd_output(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
@@ -712,7 +759,7 @@ def do_job_request(request):
     print("filename to transform in do_job_request: ", filename)
     error = creator_build('tmp_assembly.s', filename)
     if error != 0:
-        req_data['status'] += 'Error adapting assembly file...\n'
+        raise Exception("Error adapting assembly file...")
 
     # flashing steps...
     if error == 0 and BUILD_PATH == './creator':
