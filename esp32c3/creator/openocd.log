@@ -1,0 +1,379 @@
+Executing action: openocd
+Running cmake in directory /home/elisa/dual_CREATOR_driver/esp32c3/creator/build
+Executing "cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=/home/elisa/.espressif/python_env/idf5.3_py3.12_env/bin/python -DESP_PLATFORM=1 -DCCACHE_ENABLE=0 /home/elisa/dual_CREATOR_driver/esp32c3/creator"...
+-- IDF_TARGET is not set, guessed 'esp32c3' from sdkconfig '/home/elisa/dual_CREATOR_driver/esp32c3/creator/sdkconfig'
+-- Found Git: /usr/bin/git (found version "2.43.0") 
+-- The C compiler identification is GNU 13.2.0
+-- The CXX compiler identification is GNU 13.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /home/elisa/.espressif/tools/riscv32-esp-elf/esp-13.2.0_20240530/riscv32-esp-elf/bin/riscv32-esp-elf-gcc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /home/elisa/.espressif/tools/riscv32-esp-elf/esp-13.2.0_20240530/riscv32-esp-elf/bin/riscv32-esp-elf-gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /home/elisa/.espressif/tools/riscv32-esp-elf/esp-13.2.0_20240530/riscv32-esp-elf/bin/riscv32-esp-elf-g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Building ESP-IDF components for target esp32c3
+-- Project sdkconfig file /home/elisa/dual_CREATOR_driver/esp32c3/creator/sdkconfig
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/riscv/ld/rom.api.ld
+-- Found Python3: /home/elisa/.espressif/python_env/idf5.3_py3.12_env/bin/python (found version "3.9.21") found components: Interpreter 
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
+-- App "hello_world" version: f7b9599-dirty
+-- Adding linker script /home/elisa/dual_CREATOR_driver/esp32c3/creator/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script /home/elisa/dual_CREATOR_driver/esp32c3/creator/build/esp-idf/esp_system/ld/sections.ld.in
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.api.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.bt_funcs.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.libgcc.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.version.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.eco3.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.eco3_bt_funcs.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.newlib.ld
+-- Adding linker script /home/elisa/esp/v5.3/esp-idf/components/soc/esp32c3/ld/esp32c3.peripherals.ld
+-- Components: app_trace app_update bootloader bootloader_support bt cmock console cxx driver efuse esp-tls esp_adc esp_app_format esp_bootloader_format esp_coex esp_common esp_driver_ana_cmpr esp_driver_cam esp_driver_dac esp_driver_gpio esp_driver_gptimer esp_driver_i2c esp_driver_i2s esp_driver_isp esp_driver_jpeg esp_driver_ledc esp_driver_mcpwm esp_driver_parlio esp_driver_pcnt esp_driver_ppa esp_driver_rmt esp_driver_sdio esp_driver_sdm esp_driver_sdmmc esp_driver_sdspi esp_driver_spi esp_driver_touch_sens esp_driver_tsens esp_driver_uart esp_driver_usb_serial_jtag esp_eth esp_event esp_gdbstub esp_hid esp_http_client esp_http_server esp_https_ota esp_https_server esp_hw_support esp_lcd esp_local_ctrl esp_mm esp_netif esp_netif_stack esp_partition esp_phy esp_pm esp_psram esp_ringbuf esp_rom esp_system esp_timer esp_vfs_console esp_wifi espcoredump esptool_py fatfs freertos hal heap http_parser idf_test ieee802154 json log lwip main mbedtls mqtt newlib nvs_flash nvs_sec_provider openthread partition_table protobuf-c protocomm pthread riscv sdmmc soc spi_flash spiffs tcp_transport ulp unity usb vfs wear_levelling wifi_provisioning wpa_supplicant
+-- Component paths: /home/elisa/esp/v5.3/esp-idf/components/app_trace /home/elisa/esp/v5.3/esp-idf/components/app_update /home/elisa/esp/v5.3/esp-idf/components/bootloader /home/elisa/esp/v5.3/esp-idf/components/bootloader_support /home/elisa/esp/v5.3/esp-idf/components/bt /home/elisa/esp/v5.3/esp-idf/components/cmock /home/elisa/esp/v5.3/esp-idf/components/console /home/elisa/esp/v5.3/esp-idf/components/cxx /home/elisa/esp/v5.3/esp-idf/components/driver /home/elisa/esp/v5.3/esp-idf/components/efuse /home/elisa/esp/v5.3/esp-idf/components/esp-tls /home/elisa/esp/v5.3/esp-idf/components/esp_adc /home/elisa/esp/v5.3/esp-idf/components/esp_app_format /home/elisa/esp/v5.3/esp-idf/components/esp_bootloader_format /home/elisa/esp/v5.3/esp-idf/components/esp_coex /home/elisa/esp/v5.3/esp-idf/components/esp_common /home/elisa/esp/v5.3/esp-idf/components/esp_driver_ana_cmpr /home/elisa/esp/v5.3/esp-idf/components/esp_driver_cam /home/elisa/esp/v5.3/esp-idf/components/esp_driver_dac /home/elisa/esp/v5.3/esp-idf/components/esp_driver_gpio /home/elisa/esp/v5.3/esp-idf/components/esp_driver_gptimer /home/elisa/esp/v5.3/esp-idf/components/esp_driver_i2c /home/elisa/esp/v5.3/esp-idf/components/esp_driver_i2s /home/elisa/esp/v5.3/esp-idf/components/esp_driver_isp /home/elisa/esp/v5.3/esp-idf/components/esp_driver_jpeg /home/elisa/esp/v5.3/esp-idf/components/esp_driver_ledc /home/elisa/esp/v5.3/esp-idf/components/esp_driver_mcpwm /home/elisa/esp/v5.3/esp-idf/components/esp_driver_parlio /home/elisa/esp/v5.3/esp-idf/components/esp_driver_pcnt /home/elisa/esp/v5.3/esp-idf/components/esp_driver_ppa /home/elisa/esp/v5.3/esp-idf/components/esp_driver_rmt /home/elisa/esp/v5.3/esp-idf/components/esp_driver_sdio /home/elisa/esp/v5.3/esp-idf/components/esp_driver_sdm /home/elisa/esp/v5.3/esp-idf/components/esp_driver_sdmmc /home/elisa/esp/v5.3/esp-idf/components/esp_driver_sdspi /home/elisa/esp/v5.3/esp-idf/components/esp_driver_spi /home/elisa/esp/v5.3/esp-idf/components/esp_driver_touch_sens /home/elisa/esp/v5.3/esp-idf/components/esp_driver_tsens /home/elisa/esp/v5.3/esp-idf/components/esp_driver_uart /home/elisa/esp/v5.3/esp-idf/components/esp_driver_usb_serial_jtag /home/elisa/esp/v5.3/esp-idf/components/esp_eth /home/elisa/esp/v5.3/esp-idf/components/esp_event /home/elisa/esp/v5.3/esp-idf/components/esp_gdbstub /home/elisa/esp/v5.3/esp-idf/components/esp_hid /home/elisa/esp/v5.3/esp-idf/components/esp_http_client /home/elisa/esp/v5.3/esp-idf/components/esp_http_server /home/elisa/esp/v5.3/esp-idf/components/esp_https_ota /home/elisa/esp/v5.3/esp-idf/components/esp_https_server /home/elisa/esp/v5.3/esp-idf/components/esp_hw_support /home/elisa/esp/v5.3/esp-idf/components/esp_lcd /home/elisa/esp/v5.3/esp-idf/components/esp_local_ctrl /home/elisa/esp/v5.3/esp-idf/components/esp_mm /home/elisa/esp/v5.3/esp-idf/components/esp_netif /home/elisa/esp/v5.3/esp-idf/components/esp_netif_stack /home/elisa/esp/v5.3/esp-idf/components/esp_partition /home/elisa/esp/v5.3/esp-idf/components/esp_phy /home/elisa/esp/v5.3/esp-idf/components/esp_pm /home/elisa/esp/v5.3/esp-idf/components/esp_psram /home/elisa/esp/v5.3/esp-idf/components/esp_ringbuf /home/elisa/esp/v5.3/esp-idf/components/esp_rom /home/elisa/esp/v5.3/esp-idf/components/esp_system /home/elisa/esp/v5.3/esp-idf/components/esp_timer /home/elisa/esp/v5.3/esp-idf/components/esp_vfs_console /home/elisa/esp/v5.3/esp-idf/components/esp_wifi /home/elisa/esp/v5.3/esp-idf/components/espcoredump /home/elisa/esp/v5.3/esp-idf/components/esptool_py /home/elisa/esp/v5.3/esp-idf/components/fatfs /home/elisa/esp/v5.3/esp-idf/components/freertos /home/elisa/esp/v5.3/esp-idf/components/hal /home/elisa/esp/v5.3/esp-idf/components/heap /home/elisa/esp/v5.3/esp-idf/components/http_parser /home/elisa/esp/v5.3/esp-idf/components/idf_test /home/elisa/esp/v5.3/esp-idf/components/ieee802154 /home/elisa/esp/v5.3/esp-idf/components/json /home/elisa/esp/v5.3/esp-idf/components/log /home/elisa/esp/v5.3/esp-idf/components/lwip /home/elisa/dual_CREATOR_driver/esp32c3/creator/main /home/elisa/esp/v5.3/esp-idf/components/mbedtls /home/elisa/esp/v5.3/esp-idf/components/mqtt /home/elisa/esp/v5.3/esp-idf/components/newlib /home/elisa/esp/v5.3/esp-idf/components/nvs_flash /home/elisa/esp/v5.3/esp-idf/components/nvs_sec_provider /home/elisa/esp/v5.3/esp-idf/components/openthread /home/elisa/esp/v5.3/esp-idf/components/partition_table /home/elisa/esp/v5.3/esp-idf/components/protobuf-c /home/elisa/esp/v5.3/esp-idf/components/protocomm /home/elisa/esp/v5.3/esp-idf/components/pthread /home/elisa/esp/v5.3/esp-idf/components/riscv /home/elisa/esp/v5.3/esp-idf/components/sdmmc /home/elisa/esp/v5.3/esp-idf/components/soc /home/elisa/esp/v5.3/esp-idf/components/spi_flash /home/elisa/esp/v5.3/esp-idf/components/spiffs /home/elisa/esp/v5.3/esp-idf/components/tcp_transport /home/elisa/esp/v5.3/esp-idf/components/ulp /home/elisa/esp/v5.3/esp-idf/components/unity /home/elisa/esp/v5.3/esp-idf/components/usb /home/elisa/esp/v5.3/esp-idf/components/vfs /home/elisa/esp/v5.3/esp-idf/components/wear_levelling /home/elisa/esp/v5.3/esp-idf/components/wifi_provisioning /home/elisa/esp/v5.3/esp-idf/components/wpa_supplicant
+-- Configuring done (3.0s)
+-- Generating done (0.3s)
+-- Build files have been written to: /home/elisa/dual_CREATOR_driver/esp32c3/creator/build
+Executing action: openocd
+Note: OpenOCD cfg not found (via env variable OPENOCD_COMMANDS nor as a --openocd-commands argument)
+OpenOCD arguments default to: "-f board/esp32c3-builtin.cfg"
+OpenOCD started as a background task 201106
+Executing action: post_debug
+Open On-Chip Debugger v0.12.0-esp32-20241016 (2024-10-16-14:17)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+Info : only one transport option; autoselecting 'jtag'
+Info : esp_usb_jtag: VID set to 0x303a and PID to 0x1001
+Info : esp_usb_jtag: capabilities descriptor set to 0x2000
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : esp_usb_jtag: serial (58:CF:79:16:81:90)
+Info : esp_usb_jtag: Device found. Base speed 40000KHz, div range 1 to 255
+Info : clock speed 40000 kHz
+Info : JTAG tap: esp32c3.tap0 tap/device found: 0x00005c25 (mfg: 0x612 (Espressif Systems), part: 0x0005, ver: 0x0)
+Info : [esp32c3] datacount=2 progbufsize=16
+Info : [esp32c3] Examined RISC-V core; found 1 harts
+Info : [esp32c3]  XLEN=32, misa=0x40101104
+Info : [esp32c3] Examination succeed
+Info : [esp32c3] starting gdb server on 3333
+Info : Listening on port 3333 for gdb connections
+Info : accepting 'gdb' connection on tcp/3333
+Info : [esp32c3] Target halted, PC=0x4200AF06, debug_reason=00000000
+Warn : No symbols for FreeRTOS!
+Info : [esp32c3] Found 8 triggers
+Info : Flash mapping 0: 0x10020 -> 0x3c020020, 38 KB
+Info : Flash mapping 1: 0x20020 -> 0x42000020, 92 KB
+Info : Auto-detected flash bank 'esp32c3.flash' size 4096 KB
+Info : Using flash bank 'esp32c3.flash' size 4096 KB
+Info : Flash mapping 0: 0x10020 -> 0x3c020020, 38 KB
+Info : Flash mapping 1: 0x20020 -> 0x42000020, 92 KB
+Info : Using flash bank 'esp32c3.irom' size 96 KB
+Info : Flash mapping 0: 0x10020 -> 0x3c020020, 38 KB
+Info : Flash mapping 1: 0x20020 -> 0x42000020, 92 KB
+Info : Using flash bank 'esp32c3.drom' size 40 KB
+Warn : Error writing to GDB socket. Dropping the connection.
+Info : dropped 'gdb' connection
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: libusb_open() failed with LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Info : esp_usb_jtag: serial (58:CF:79:16:81:90)
+Info : esp_usb_jtag: Device found. Base speed 40000KHz, div range 1 to 255
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Info : accepting 'gdb' connection on tcp/3333
+Error: [esp32c3] Failed DMI read at 0x11; status=1
+Error: [esp32c3] polling failed!
+Info : [esp32c3] Hart unexpectedly reset!
+Error: [esp32c3] No harts were prepped!
+Error: Failed to read mcause register. Unknown exception reason!
+Error: [esp32c3] Execution of event gdb-attach failed:
+/home/elisa/.espressif/tools/openocd-esp32/v0.12.0-esp32-20241016/openocd-esp32/share/openocd/scripts/target/esp_common.cfg:9: Error:
+at file "/home/elisa/.espressif/tools/openocd-esp32/v0.12.0-esp32-20241016/openocd-esp32/share/openocd/scripts/target/esp_common.cfg", line 9
+Warn : No symbols for FreeRTOS!
+Error: [esp32c3] Unexpected read of zero via program buffer.
+Info : Detected FreeRTOS version: (10.5.1)
+Error: [esp32c3] Unexpected read of zero via program buffer.
+Error: target_get_gdb_reg_list failed -4
+Info : [esp32c3] Reset cause (1) - (Chip reset)
+Info : JTAG tap: esp32c3.tap0 tap/device found: 0x00005c25 (mfg: 0x612 (Espressif Systems), part: 0x0005, ver: 0x0)
+Info : [esp32c3] Reset cause (3) - (Software core reset)
+Info : dropped 'gdb' connection
+Info : [esp32c3] Target halted, PC=0x42008FFA, debug_reason=00000001
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: extra data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: extra data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Info : esp_usb_jtag: serial (58:CF:79:16:81:90)
+Info : esp_usb_jtag: Device found. Base speed 40000KHz, div range 1 to 255
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_IO
+Error: libusb_get_string_descriptor_ascii() failed with 'LIBUSB_ERROR_IO'
+Error: libusb_open() failed with LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: failed jtag scan: -104
+Error: [esp32c3] Failed DMI read at 0x11; status=2
+Error: [esp32c3] polling failed!
+Info : accepting 'gdb' connection on tcp/3333
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
+Error: dmi_scan failed jtag scan
+Error: libusb_bulk_write error: LIBUSB_ERROR_NO_DEVICE
+Error: esp_usb_jtag: device not found!
+Error: esp_usb_jtag: failed to revive USB device!
+Error: missing data from bitq interface
