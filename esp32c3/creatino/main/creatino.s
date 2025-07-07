@@ -1392,8 +1392,14 @@ cr_serial_readBytesUntil:
     lw ra, 28(sp)          # Restaurar ra
     addi sp, sp, 32        # Liberar espacio del stack
     ret
-.global cr_serial_readString   
+.global cr_serial_readString
+.extern serial_readString   
 cr_serial_readString:
+    addi sp, sp, -4      
+    sw ra, 0(sp)     # Guardar el valor de ra (return address)
+    jal ra, serial_readString
+    lw ra, 0(sp)     # Recupera el valor de ra
+    addi sp, sp, 4
     jr ra
 .global cr_serial_readStringUntil  
 cr_serial_readStringUntil:
