@@ -30,11 +30,80 @@ import select
 import logging
 import shutil
 import glob
-import traceback
 
 BUILD_PATH = './creator' #By default we call the classics ;)
 ACTUAL_TARGET = ''
 arduino = False
+
+creatino_functions = [
+    "initArduino",
+    "digitalRead",
+    "pinMode",
+    "digitalWrite",
+    "analogRead",
+    "analogReadResolution",
+    "analogWrite",
+    "map",
+    "constrain",
+    "abs",
+    "max",
+    "min",
+    "pow",
+    "bit",
+    "bitClear",
+    "bitRead",
+    "bitSet",
+    "bitWrite",
+    "highByte",
+    "lowByte",
+    "sqrt",
+    "sq",
+    "cos",
+    "sin",
+    "tan",
+    "attachInterrupt",
+    "detachInterrupt",
+    "digitalPinToInterrupt",
+    "pulseIn",
+    "pulseInLong",
+    "shiftIn",
+    "shiftOut",
+    "interrupts",
+    "nointerrupts",
+    "isDigit",
+    "isAlpha",
+    "isAlphaNumeric",
+    "isAscii",
+    "isControl",
+    "isPunct",
+    "isHexadecimalDigit",
+    "isUpperCase",
+    "isLowerCase",
+    "isPrintable",
+    "isGraph",
+    "isSpace",
+    "isWhiteSpace",
+    "delay",
+    "delayMicroseconds",
+    "randomSeed",
+    "random",
+    "serial_available",
+    "serial_availableForWrite",
+    "serial_begin",
+    "serial_end",
+    "serial_find",
+    "serial_findUntil",
+    "serial_flush",
+    "serial_parseFloat",
+    "serial_parseInt",
+    "serial_read",
+    "serial_readBytes",
+    "serial_readBytesUntil",
+    "serial_readString",
+    "serial_readStringUntil",
+    "serial_write",
+    "serial_printf"
+]
 
 stop_thread = False
 # Diccionario para almacenar el proceso
@@ -46,6 +115,27 @@ stop_event = threading.Event()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+#  EXIT order
+def handle_exit(sig, frame):
+    try:
+      print("\n🔴 Cleaning gateway...")
+      cmd_array = ['idf.py','-C', './creatino','fullclean']
+      subprocess.run(cmd_array, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120)
+      cmd_array = ['idf.py','-C', './creator','fullclean']
+      subprocess.run(cmd_array, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120)
+      carpeta = './creatino/managed_components'
+
+      # Verificar si la carpeta existe antes de intentar eliminarla
+      if os.path.exists(carpeta):
+          shutil.rmtree(carpeta)
+          print(f"La carpeta '{carpeta}' ha sido eliminada.")
+      else:
+          print(f"La carpeta '{carpeta}' no existe.")
+
+      print("✅ Closing program...")
+      sys.exit(0)
+    except Exception as e:
+      print(f"ERROR:{e} ")
 
 ####----Cleaning functions----
 def do_fullclean_request(request):
@@ -92,6 +182,7 @@ def check_gdb_connection():
     try:
         lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
+        #print("Output: ", output.decode())
         return output.decode()
     except subprocess.TimeoutExpired:
         lsof.kill()
@@ -252,7 +343,10 @@ def start_gdbgui(req_data):
         return jsonify(req_data)
     try:
         output = check_gdb_connection()
-        timeout = 10  
+        # while "riscv32-e" not in output:
+        #     time.sleep(1)
+        #     output = check_gdb_connection() 
+        timeout = 10  # segundos
         start = time.time()
         while "riscv32-e" not in output and time.time() - start < timeout:
             time.sleep(1)
@@ -384,13 +478,9 @@ def do_debug_request(request):
 
             # Start OpenOCD
             openocd_thread = start_openocd_thread(req_data)
-            while openocd_thread is None:
-                time.sleep(1)
-                openocd_thread = start_openocd_thread(req_data)
-
-            # Esperar a que openocd esté en process_holder
             while process_holder.get('openocd') is None:
-                time.sleep(1)
+              time.sleep(1)
+              #start_openocd_thread(req_data)
 
             # Start gdbgui   
             logging.info("Starting gdbgui")
@@ -403,6 +493,7 @@ def do_debug_request(request):
             
     except Exception as e:
         req_data['status'] += f"Unexpected error: {str(e)}\n"
+        logging.error(f"Exception in do_debug_request: {e}")
 
     return jsonify(req_data)
 
@@ -423,7 +514,7 @@ def do_arduino_mode(request):
   req_data['status'] = ''
   global arduino
   arduino = not statusChecker
-  logging.debug(f"Estado checkbox: {arduino} de tipo {type(statusChecker)}")    
+  print(f"Estado checkbox: {arduino} de tipo {type(statusChecker)}")    
   return  req_data
  
 def check_build():
@@ -435,7 +526,7 @@ def check_build():
       BUILD_PATH = './creator' 
     return 0   
   except Exception as e:
-    logging.error("Error adapting assembly file: ", str(e))
+    print("Error adapting assembly file: ", str(e))
     return -1  
 
 class CrFunctionNotAllowed(Exception):
@@ -456,9 +547,15 @@ def creator_build(file_in, file_out):
     # for each line in the input file...
     for line in fin:
       data = line.strip().split()
+      # Creatino replace functions
+      if len(data) >= 3 and data[0] == 'jal':
+          ra_token = data[1].replace(',', '').strip()
+          func_token = data[2].replace(',', '').strip()
+          if ra_token == 'ra' and func_token in creatino_functions:
+              line = f"jal ra, cr_{func_token}\n"
+
       if (len(data) > 0):
         if any(token.startswith('cr_') for token in data):
-            #logging.debug(f"Uso de función cr_ detectado: {data} en modo {BUILD_PATH}")
             if BUILD_PATH == './creator':
                 raise CrFunctionNotAllowed()
         if (data[0] == 'rdcycle'):
@@ -543,7 +640,6 @@ def creator_build(file_in, file_out):
           fout.write("###############\n")
           continue
 
-
       fout.write(line)
 
     # close input + output files
@@ -552,10 +648,10 @@ def creator_build(file_in, file_out):
     return 0
 
   except CrFunctionNotAllowed:
-    logging.error("Error: cr_ functions are not supported in this mode.")
+    print("Error: cr_ functions are not supported in this mode.")
     return 2
   except Exception as e:
-    logging.error("Error adapting assembly file: ", str(e))
+    print("Error adapting assembly file: ", str(e))
     return -1
   
 # (3) Run program into the target board
@@ -632,147 +728,130 @@ def do_cmd_output(req_data, cmd_array):
 
 
 # (2) Flasing assembly program into target board
-def assert_no_error(error, message="Unknown error"):
-    if error != 0:
-        raise Exception(message)
-    
-def sdkconfig_matches_target_and_flags(sdkconfig_path, expected_target):
-    if not os.path.exists(sdkconfig_path):
-        return False
-
-    with open(sdkconfig_path, 'r') as f:
-        lines = f.readlines()
-
-    target_ok = any(
-        line.strip() == f'CONFIG_IDF_TARGET="{expected_target}"'
-        for line in lines
-    )
-
-    freertos_hz_ok = any(
-        line.strip() == 'CONFIG_FREERTOS_HZ=1000'
-        for line in lines
-    )
-
-    memprot_disabled = any(
-        line.strip() == '# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set'
-        for line in lines
-    )
-
-    return target_ok and freertos_hz_ok and memprot_disabled    
-
-def write_temp_assembly_file(asm_code):
-    temp_path = "tmp_assembly.s"
-    with open(temp_path, "w") as f:
-        f.write(asm_code)
-    return temp_path
-
-def clean_openocd_and_gdb():
-    for tool in ['openocd', 'gdbgui']:
-        if tool in process_holder:
-            logging.debug(f'Killing {tool}')
-            kill_all_processes(tool)
-            process_holder.pop(tool, None)
-    stop_event.set()
-
-def patch_sdkconfig_feature_flags(build_path, req_data):
-    for line in [
-        r's/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=.*/#/',
-        r's/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=.*/# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set/'
-    ]:
-        error = do_cmd_output(req_data, ['sed', '-i', line, f'{build_path}/sdkconfig'])
-        assert_no_error(error, f"Error patching sdkconfig: {line}")
-
-def patch_freertos_frequency(build_path, req_data):
-    error = do_cmd(req_data, [
-        'sed', '-i', 
-        's/^CONFIG_FREERTOS_HZ=.*/CONFIG_FREERTOS_HZ=1000/', 
-        f'{build_path}/sdkconfig'
-    ])
-    assert_no_error(error, "Error modifying FreeRTOS frequency")
-
-def create_sdkconfig_defaults(build_path):
-    defaults_path = os.path.join(build_path, "sdkconfig.defaults")
-    with open(defaults_path, "w") as f:
-        # f.write(
-        #     "CONFIG_FREERTOS_HZ=1000\n"
-        #     "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set\n"
-        #     "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set\n"
-        # )
-        f.write(
-            "CONFIG_FREERTOS_HZ=1000\n"
-            "# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set\n"
-        )
-
-
 def do_flash_request(request):
-    try:
-        req_data = request.get_json()
-        target_device = req_data['target_port']
-        #target_board  = req_data['target_board']
-        target_board  = 'esp32c6'
-        asm_code      = req_data['assembly']
-        req_data['status'] = ''
+  try:
+    req_data = request.get_json()
+    target_device      = req_data['target_port']
+    target_board       = req_data['target_board']
+    asm_code           = req_data['assembly']
+    req_data['status'] = ''
 
-        global BUILD_PATH, ACTUAL_TARGET, stop_event
-        BUILD_PATH = './creator'
+    # create temporal assembly file
+    text_file = open("tmp_assembly.s", "w")
+    ret = text_file.write(asm_code)
+    text_file.close()
+    global BUILD_PATH
+    global stop_event
+    global ACTUAL_TARGET
+    BUILD_PATH = './creator'
+    # check arduinoCheck
+    error = check_build()
 
-        clean_openocd_and_gdb()
+    if 'openocd' in process_holder:
+      logging.debug('Killing OpenOCD')
+      kill_all_processes("openocd")
+      process_holder.pop('openocd', None)
 
-        error = check_build()
-        assert_no_error(error, "Build check failed")
+    if 'gdbgui' in process_holder:
+      logging.debug('Killing GDBGUI')
+      kill_all_processes("gdbgui")
+      process_holder.pop('gdbgui', None)
 
-        temp_file = write_temp_assembly_file(asm_code)
-        error = creator_build(temp_file, f'{BUILD_PATH}/main/program.s')
-        if error == 2:
-            raise Exception("cr_ functions are not supported in this mode.")
-        assert_no_error(error, "Failed to process assembly file")
+    stop_event.set() # Detener el hilo de monitoreo  
 
-        assert_no_error(check_uart_connection(), "No UART port found.")
+    # transform th temporal assembly file
+    filename= BUILD_PATH + '/main/program.s'
+    logging.debug("filename to transform in do_flash_request: ", filename)
+    error = creator_build('tmp_assembly.s', filename)
+    if error == 2:
+      logging.info("cr_ functions are not supported in this mode.")
+      raise Exception("cr_ functions are not supported in this mode.")
+    elif error != 0:
+      raise Exception
 
-        # Fullclean only for creator
-        if BUILD_PATH == './creator':
-            error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'fullclean'])
-            assert_no_error(error, "Fullclean failed")
-
+    # flashing steps...
+    if error == 0 :
+      error = check_uart_connection()
+    if error != 0:
+      req_data['status'] += 'No UART port found.\n'
+      raise  Exception("No UART port found")
+     
+    if error == 0 and BUILD_PATH == './creator':
+      error = do_cmd(req_data, ['idf.py','-C', BUILD_PATH,'fullclean'])
+    # if error == 0 and BUILD_PATH == './creatino' and ACTUAL_TARGET != target_board:
+    if error == 0 and ACTUAL_TARGET != target_board:
+        # print("ACTUAL_TARGET: ", ACTUAL_TARGET)
+        print(f"File path: {BUILD_PATH}/sdkconfig")
         sdkconfig_path = os.path.join(BUILD_PATH, "sdkconfig")
+        # 1. Crear/actualizar sdkconfig.defaults con la frecuencia correcta
+        defaults_path = os.path.join(BUILD_PATH, "sdkconfig.defaults")
+        if target_board == 'esp32c3':
+          with open(defaults_path, "w") as f:
+              f.write(
+                  "CONFIG_FREERTOS_HZ=1000\n"
+                  "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set\n"
+                  "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set\n"
+              )
+        elif target_board == 'esp32c6': 
+          with open(defaults_path, "w") as f:
+              f.write(
+                  "CONFIG_FREERTOS_HZ=1000\n"
+                  "# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set\n"
+              )     
+        
+        # 2. If previous sdkconfig exists, check if mem protection is disabled (for debug purposes)
+        if os.path.exists(sdkconfig_path):
+          if target_board == 'esp32c3':
+            #CONFIG_FREERTOS_HZ=1000
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_FREERTOS_HZ=/c\CONFIG_FREERTOS_HZ=1000',
+                sdkconfig_path
+            ])
+            # Memory Protection
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set',
+                sdkconfig_path
+            ])
+            # Memory protection lock
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set',
+                sdkconfig_path
+            ])
+          elif target_board == 'esp32c6':
+            #CONFIG_FREERTOS_HZ=1000
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_FREERTOS_HZ=/c\CONFIG_FREERTOS_HZ=1000',
+                sdkconfig_path
+            ])
+            # PMP IDRAM split
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=/c\# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set',
+                sdkconfig_path
+            ])  
+          
+        # 3. Ahora sí, ejecutar set-target
+        error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
+        if error != 0:
+            raise Exception("No se pudo establecer el target")
+        ACTUAL_TARGET = target_board 
+        
+    if error == 0:
+      error = do_cmd(req_data, ['idf.py','-C', BUILD_PATH,'build'])
+    if error == 0:
+      error = do_cmd(req_data, ['idf.py','-C', BUILD_PATH, '-p', target_device, 'flash'])
+    if error == 0:
+          req_data['status'] += 'Flash completed successfully.\n'  
 
-        # Check if sdkconfig already has correct target and flags
-        if not sdkconfig_matches_target_and_flags(sdkconfig_path, target_board):
-          logging.info("sdkconfig missing or misconfigured. Reconfiguring...")
+  except Exception as e:
+    req_data['status'] += str(e) + '\n'
+    print("Error in do_flash_request: ", str(e))
 
-          create_sdkconfig_defaults(BUILD_PATH)
-          error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
-          assert_no_error(error, "Failed to set target")
-          logging.info("Target set to: " + target_board)
-
-
-          # patch_sdkconfig_feature_flags(BUILD_PATH, req_data)
-          # patch_freertos_frequency(BUILD_PATH, req_data)  
-
-        # Update ACTUAL_TARGET cache
-        if ACTUAL_TARGET != target_board:
-            ACTUAL_TARGET = target_board
-
-        time.sleep(1)
-
-        error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'build'])
-        assert_no_error(error, "Build failed")
-
-        error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, '-p', target_device, 'flash'])
-        assert_no_error(error, "Flash failed")
-
-        req_data['status'] += 'Flash completed successfully.\n'
-
-    except Exception as e:
-        req_data['status'] += f'Error: {str(e)}\n'
-        traceback.print_exc()
-
-    finally:
-        if os.path.exists("tmp_assembly.s"):
-            os.remove("tmp_assembly.s")
-
-    return jsonify(req_data)
-
+  return jsonify(req_data)
 
 # (4) Flasing assembly program into target board
 def do_job_request(request):
@@ -790,7 +869,7 @@ def do_job_request(request):
     error = check_build('tmp_assembly.s')
     # transform th temporal assembly file
     filename= BUILD_PATH + '/main/program.s'
-    logging.debug("filename to transform in do_job_request: ", filename)
+    print("filename to transform in do_job_request: ", filename)
     error = creator_build('tmp_assembly.s', filename)
     if error != 0:
         raise Exception("Error adapting assembly file...")
@@ -836,7 +915,7 @@ def do_stop_monitor_request(request):
   try:
     req_data = request.get_json()
     req_data['status'] = ''
-    logging.debug("Killing Monitor")
+    print("Killing Monitor")
     error = kill_all_processes("idf.py")
     if error == 0:
       req_data['status'] += 'Process stopped\n' 
