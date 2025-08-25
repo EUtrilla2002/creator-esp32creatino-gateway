@@ -7,7 +7,7 @@ if(NOT DEFINED ENV{IDF_PATH})
 endif()
 
 # Asegúrate de usar la toolchain correcta para ESP32-C3
-set(CMAKE_TOOLCHAIN_FILE $ENV{IDF_PATH}/tools/cmake/toolchain-esp32c3.cmake)
+#set(CMAKE_TOOLCHAIN_FILE $ENV{IDF_PATH}/tools/cmake/toolchain-esp32c3.cmake)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 

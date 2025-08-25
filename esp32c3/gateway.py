@@ -724,27 +724,47 @@ def do_flash_request(request):
                   "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set\n"
                   "# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set\n"
               )
+        elif target_board == 'esp32c6': 
+          with open(defaults_path, "w") as f:
+              f.write(
+                  "CONFIG_FREERTOS_HZ=1000\n"
+                  "# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set\n"
+              )     
         
         # 2. If previous sdkconfig exists, check if mem protection is disabled (for debug purposes)
         if os.path.exists(sdkconfig_path):
-          #CONFIG_FREERTOS_HZ=1000
-          do_cmd(req_data, [
-              'sed', '-i',
-              r'/^CONFIG_FREERTOS_HZ=/c\CONFIG_FREERTOS_HZ=1000',
-              sdkconfig_path
-          ])
-          # Memory Protection
-          do_cmd(req_data, [
-              'sed', '-i',
-              r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set',
-              sdkconfig_path
-          ])
-          # Memory protection lock
-          do_cmd(req_data, [
-              'sed', '-i',
-              r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set',
-              sdkconfig_path
-          ])
+          if target_board == 'esp32c3':
+            #CONFIG_FREERTOS_HZ=1000
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_FREERTOS_HZ=/c\CONFIG_FREERTOS_HZ=1000',
+                sdkconfig_path
+            ])
+            # Memory Protection
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE is not set',
+                sdkconfig_path
+            ])
+            # Memory protection lock
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK=/c\# CONFIG_ESP_SYSTEM_MEMPROT_FEATURE_LOCK is not set',
+                sdkconfig_path
+            ])
+          elif target_board == 'esp32c6':
+            #CONFIG_FREERTOS_HZ=1000
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_FREERTOS_HZ=/c\CONFIG_FREERTOS_HZ=1000',
+                sdkconfig_path
+            ])
+            # PMP IDRAM split
+            do_cmd(req_data, [
+                'sed', '-i',
+                r'/^CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT=/c\# CONFIG_ESP_SYSTEM_PMP_IDRAM_SPLIT is not set',
+                sdkconfig_path
+            ])  
           
         # 3. Ahora sí, ejecutar set-target
         error = do_cmd(req_data, ['idf.py', '-C', BUILD_PATH, 'set-target', target_board])
