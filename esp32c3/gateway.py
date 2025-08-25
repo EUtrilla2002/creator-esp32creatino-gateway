@@ -21,6 +21,7 @@
 #
 
 
+import re
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS, cross_origin
 import subprocess, os, signal, time
@@ -464,6 +465,9 @@ def check_build():
 class CrFunctionNotAllowed(Exception):
     pass
 # Adapt assembly file...
+def add_space_after_comma(text):
+    return re.sub(r',([^\s])', r', \1', text)
+
 def creator_build(file_in, file_out):
   try:
     # open input + output files
@@ -478,6 +482,7 @@ def creator_build(file_in, file_out):
     data = []
     # for each line in the input file...
     for line in fin:
+      line = add_space_after_comma(line)
       data = line.strip().split()
       # Creatino replace functions
       if len(data) >= 3 and data[0] == 'jal':
