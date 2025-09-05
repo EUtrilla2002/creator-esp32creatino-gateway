@@ -20,9 +20,9 @@
 #include "rom/uart.h"
 #include "esp_task_wdt.h"
 
-
-
-
+#define POOL_CAPACITY 65536  // 64 KB pool, as Jose Antonio puts it in his examples
+char memory_pool[POOL_CAPACITY];
+int current_offset = 0;
 
 void disable_all_hw_watchdogs() {
     // TG0
@@ -163,7 +163,16 @@ IRAM_ATTR void __wrap_esp_panic_handler(panic_info_t *info)
                 read_string(dest,length);
                 break;
             }
-            case 9:{  // sbrk
+            case 9: {  // sbrk
+                int increment = frm->a0;
+                if (current_offset + increment > POOL_CAPACITY || current_offset + increment < 0) {
+                    frm->a0 = -1; // Offlimits
+                    esp_rom_printf("\033[31;1mSBRK: Memory exhausted\033[0m\n");
+                } else {
+                    char *prev_brk = &memory_pool[current_offset];
+                    current_offset += increment;
+                    frm->a0 = (int)prev_brk; 
+                }
                 break;
             }
             case 10: { //exit
