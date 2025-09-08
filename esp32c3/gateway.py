@@ -19,6 +19,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with CREATOR.  If not, see <http://www.gnu.org/licenses/>.
 #
+#
+
 
 
 import re
@@ -523,60 +525,6 @@ def creator_build(file_in, file_out):
           fout.write("####################\n")
           continue
         
-        elif (data[0] == 'ecall' and BUILD_PATH == './creator'):
-          fout.write("#### ecall ####\n")
-          fout.write("addi sp, sp, -128\n")
-          fout.write("sw x1,  120(sp)\n")
-          fout.write("sw x3,  112(sp)\n")
-          fout.write("sw x4,  108(sp)\n")
-          fout.write("sw x5,  104(sp)\n")
-          fout.write("sw x6,  100(sp)\n")
-          fout.write("sw x7,  96(sp)\n")
-          fout.write("sw x8,  92(sp)\n")
-          fout.write("sw x9,  88(sp)\n")
-          fout.write("sw x18, 52(sp)\n")
-          fout.write("sw x19, 48(sp)\n")
-          fout.write("sw x20, 44(sp)\n")
-          fout.write("sw x21, 40(sp)\n")
-          fout.write("sw x22, 36(sp)\n")
-          fout.write("sw x23, 32(sp)\n")
-          fout.write("sw x24, 28(sp)\n")
-          fout.write("sw x25, 24(sp)\n")
-          fout.write("sw x26, 20(sp)\n")
-          fout.write("sw x27, 16(sp)\n")
-          fout.write("sw x28, 12(sp)\n")
-          fout.write("sw x29, 8(sp)\n")
-          fout.write("sw x30, 4(sp)\n")
-          fout.write("sw x31, 0(sp)\n")
-
-          fout.write("jal _myecall\n")
-
-          fout.write("lw x1,  120(sp)\n")
-          fout.write("lw x3,  112(sp)\n")
-          fout.write("lw x4,  108(sp)\n")
-          fout.write("lw x5,  104(sp)\n")
-          fout.write("lw x6,  100(sp)\n")
-          fout.write("lw x7,  96(sp)\n")
-          fout.write("lw x8,  92(sp)\n")
-          fout.write("lw x9,  88(sp)\n")
-          fout.write("lw x18, 52(sp)\n")
-          fout.write("lw x19, 48(sp)\n")
-          fout.write("lw x20, 44(sp)\n")
-          fout.write("lw x21, 40(sp)\n")
-          fout.write("lw x22, 36(sp)\n")
-          fout.write("lw x23, 32(sp)\n")
-          fout.write("lw x24, 28(sp)\n")
-          fout.write("lw x25, 24(sp)\n")
-          fout.write("lw x26, 20(sp)\n")
-          fout.write("lw x27, 16(sp)\n")
-          fout.write("lw x28, 12(sp)\n")
-          fout.write("lw x29, 8(sp)\n")
-          fout.write("lw x30, 4(sp)\n")
-          fout.write("lw x31, 0(sp)\n")
-          fout.write("addi sp, sp, 128\n")
-          fout.write("###############\n")
-          continue
-
       fout.write(line)
 
     # close input + output files
