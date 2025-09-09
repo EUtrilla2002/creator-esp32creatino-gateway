@@ -351,7 +351,7 @@ def start_gdbgui(req_data):
         #     output = check_gdb_connection() 
         timeout = 10  # segundos
         start = time.time()
-        while "riscv32-e" not in output and time.time() - start < timeout:
+        while ("riscv32-e" not in output or "CLOSE_WAIT" in output) and time.time() - start < timeout:
             time.sleep(1)
             output = check_gdb_connection()
         if "riscv32-e" not in output:
