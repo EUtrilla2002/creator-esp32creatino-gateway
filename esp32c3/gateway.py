@@ -163,399 +163,15 @@ def do_eraseflash_request(request):
         error = check_build()
         # flashing steps...
 
-    if error == 0:
-      error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'-p',target_device,'erase-flash'])
-    if error == 0:
-       req_data['status'] += 'Erase flash done. Please, unplug and plug the cable(s) again\n'
-         
-  except Exception as e:
-    req_data['status'] += str(e) + '\n'    
-
-  return jsonify(req_data) 
-
-###---------- Debug Processs------
-def check_gdb_connection():
-    """ Verifica si gdb está escuchando en el puerto 3333 """
-    command = ["lsof", "-i", ":3333"]
-    try:
-        lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
-        #print("Output: ", output.decode())
-        return output.decode()
-    except subprocess.TimeoutExpired:
-        lsof.kill()
-        output, errs = lsof.communicate()
-
-def read_gdbgui_state(req_data):
-    global process_holder
-    global stop_event
-    # Verificar si los procesos existen antes de acceder a ellos
-    #openocd = process_holder.get("openocd")
-    gdbgui = process_holder.get("gdbgui")
-    if gdbgui:
-      logging.info(f"PID de gdbgui: {gdbgui.pid}")
-
-    # Si cualquiera de los procesos no está corriendo, salir del bucle
-    # if not openocd or not gdbgui:
-    #     print("ERROR: Los procesos necesarios no están corriendo.")
-    #     stop_event.set()
-    
-    while not stop_event.is_set():
-      # Verificar la conexión a GDB
-      output = check_gdb_connection()
-      while output is None:
-          time.sleep(1)
-
-      output_text = output.decode(errors="ignore")
-      if "riscv32-e" not in output_text:
-          print(" [ERROR]: Reintentando conexión...")
-          if "gdbgui" in process_holder:
-            # Matar el proceso específico en process_holder
-            process_holder["gdbgui"].kill()  # Solo matar si existe
-            process_holder.pop("gdbgui", None)
-            kill_all_processes("gdbgui")
-
-          try:
-              thread = start_gdbgui(req_data)       
-              print("Creado nuevo proceso")
-              if 'gdbgui' in process_holder:
-                 print(f"PID Nuevo de gdbgui: {process_holder['gdbgui'].pid}")
-          except Exception as e:
-              logging.error(f"Fallo al crear proceso: {e}")
-
-          time.sleep(5)    
-      else:
-          print(f"PID Actual: {process_holder['gdbgui'].pid}")
-          time.sleep(10)   
-   
-
-
-
-# def read_openocd_output(req_data):
-#     global stop_event
-#     """Verifica el estado del proceso"""
-#     global process_holder
-#     # Verificar si los procesos existen antes de acceder a ellos
-#     openocd = process_holder.get("openocd")
-
-#     # Si cualquiera de los procesos no está corriendo, salir del bucle
-#     # if not openocd:
-#     #     print("ERROR: Los procesos necesarios no están corriendo.")
-#     #     return None
-#     while True:
-#       # Leer stderr
-#       error_output = openocd.stderr.readline()
-#       if error_output:
-#           if "OpenOCD already running" in error_output:
-#               pass  # No hacer nada si OpenOCD ya está corriendo
-#           elif "Please list all processes to check if OpenOCD is already running" in error_output:
-#               logging.warning("OpenOCD se está ejecutando en otro proceso y no se puede conectar(¿Tiene otro servidor abierto?)")
-#               openocd.kill()  # Matar proceso openocd
-#               process_holder.pop("openocd", None)
-#               stop_event.set()    
-#               #break  # Salir del bucle si el error es crítico (OpenOCD ya corriendo)
-#           elif "Please check the wire connection" in error_output:
-#               logging.error("Por favor revise la conexión de cables")  
-#               openocd.kill()  # Matar proceso openocd
-#               process_holder.pop("openocd", None)
-#               stop_event.set()     
-#               #break  # Salir del bucle si el error es por un problema de conexión
-#           else:
-#               logging.error(f"Salida de error desconocido: {error_output.strip()}")
-#               openocd.kill()  # Matar proceso openocd
-#               process_holder.pop("openocd", None)
-#               stop_event.set()     
-#               # Salir del bucle si hay un error no reconocido
-
-          
-          time.sleep(0.1)  # Pequeño delay para evitar consumo excesivo de CPU
-
-
-def check_uart_connection():
-    """ Checks UART devices """
-    devices = glob.glob('/dev/ttyUSB*')
-    logging.debug(f"Found devices: {devices}")
-    if "/dev/ttyUSB0" in devices:
-        logging.info("Found UART.")
-        return 0
-    elif devices:
-        logging.error("Other UART devices found (Is the name OK?).")
-        return 0
-    else:
-        logging.error("NO UART port found.")
-        return 1
-    
-def check_jtag_connection():
-    """ Checks JTAG devices """
-    command = ["lsusb"]
-    try:
-        lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, errs = lsof.communicate(timeout=5)  
-        if output:
-            output_text = output.decode(errors="ignore")
-            if "JTAG" in output_text:
-                logging.info("JTAG found")
-                return True
-            else:
-                logging.warning("JTAG missing")
-                return False
-    except subprocess.TimeoutExpired:
-        lsof.kill()
-        output, errs = lsof.communicate()
-    except Exception as e:
-        logging.error(f"Error checking JTAG: {e}")
-        return None
-    return False    
-# --- (6.2) Debug processes monitoring functions ---
-
-def check_gdb_connection():
-    """ Checks gdb status """
-    command = ["lsof", "-i", ":3333"]
-    try:
-        lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, errs = lsof.communicate(timeout=5) 
-        logging.debug("GDB connection output: %s", output.decode())
-        return output.decode()
-    except subprocess.TimeoutExpired:
-        lsof.kill()
-        output, errs = lsof.communicate()
-        logging.error(" GDB:Timeout waiting for GDB connection.")
-    except Exception as e:
-        logging.error(f"Error checking GDB: {e}")
-        return None
-    return False
-
-def monitor_openocd_output(req_data, cmd_args, name):
-    logfile_path = os.path.join(BUILD_PATH, f"{name}.log")
-    try:
-        print('A')
-        # Ejecutar el comando idf.py con GDB
-        global process_holder
-        process_holder[name] = subprocess.Popen(
-            cmd_args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        if process_holder[name].poll() is None:
-            logging.info(f"El proceso {name} sigue corriendo.")
-        else:
-            logging.info(f"El proceso {name} ha terminado.")
-        logging.info(process_holder.keys())
-        return process_holder[name]
-    except Exception as e:
-        logging.error(f"Error executing command {name}: {e}")
-        process_holder.pop(name, None)
-        return None
-    
-def kill_all_processes(process_name):
-    try:
-        if not process_name:
-            logging.error("El nombre del proceso no puede estar vacío.")
-            return 1
-
-        # Comando para obtener los PIDs de los procesos
-        get_pids_cmd = f"ps aux | grep '[{process_name[0]}]{process_name[1:]}' | awk '{{print $2}}'"
-        result = subprocess.run(get_pids_cmd, shell=True, capture_output=True, text=True)
-
-        #  PIDs list
-        pids = result.stdout.strip().split()
-        
-        if not pids:
-            logging.warning(f"Not processes found '{process_name}'.")
-            return 1  # Devuelve 1 para indicar que no se hizo nada
-
-        # Ejecuta kill solo si hay PIDs
-        kill_cmd = f"kill -9 {' '.join(pids)}"
-        result = subprocess.run(kill_cmd, shell=True, capture_output=True, timeout=120, check=False)
-
-        if result.returncode != 0:
-            logging.error(f"Error al intentar matar los procesos {process_name}. Salida: {result.stderr.strip()}")
-        else:
-            logging.info(f"Todos los procesos '{process_name}' han sido eliminados.")
-        
-        return result.returncode
-
-    except subprocess.TimeoutExpired as e:
-        logging.error(f"El proceso excedió el tiempo de espera: {e}")
-        return 1
-
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error al ejecutar el comando: {e}")
-        return 1
-
-    except Exception as e:
-        logging.error(f"Ocurrió un error inesperado: {e}")
-        return 1
-
-    
-# (6.3) OpenOCD Function
-def start_openocd_thread(req_data):
-    target_board       = req_data['target_board']
-    route = BUILD_PATH + '/openocd_scripts/openscript_' + target_board + '.cfg'
-    logging.info(f"OpenOCD route: {route}")
-    try:
-        thread = threading.Thread(
-            target=monitor_openocd_output,
-            args=(req_data, ['openocd', '-f', route], 'openocd'),
-            daemon=True
-        )
-        thread.start()
-        logging.debug("Starting OpenOCD thread...")
-        return thread
-    except Exception as e:
-        req_data['status'] += f"Error starting OpenOCD: {str(e)}\n"
-        logging.error(f"Error starting OpenOCD: {str(e)}")
-        return None
-# (6.4) GDBGUI function    
-def start_gdbgui(req_data):
-    route = os.path.join(BUILD_PATH, 'gdbinit')
-    logging.debug(f"GDB route: {route}")
-    route = os.path.join(BUILD_PATH, 'gdbinit')
-    if os.path.exists(route) and os.path.exists("./gbdscript.gdb"):
-        logging.debug(f"GDB route: {route} exists.")
-    else:
-        logging.error(f"GDB route: {route} does not exist.")
-        req_data['status'] += f"GDB route: {route} does not exist.\n"
-        return jsonify(req_data)
-    req_data['status'] = ''
-    if check_uart_connection:
-      logging.info("Starting GDBGUI...")
-      gdbgui_cmd = ['idf.py', '-C', BUILD_PATH, 'gdbgui', '--gdbinit', route, 'monitor']
-      time.sleep(5)
-      try:
-          process_holder['gdbgui'] = subprocess.run(
-              gdbgui_cmd,
-              stdout=sys.stdout,
-              stderr=sys.stderr,
-              text=True
-          )
-          if process_holder['gdbgui'].returncode != -9 and process_holder['gdbgui'].returncode != 0:
-              logging.error(f"Command failed with return code {process_holder['gdbgui'].returncode}")
-
-      except subprocess.CalledProcessError as e:
-          logging.error("Failed to start GDBGUI: %s", e)
-          req_data['status'] += f"Error starting GDBGUI (code {e.returncode}): {e.stderr}\n"
-          return None
-      except Exception as e:
-          logging.error("Unexpected error in GDBGUI: %s", e)
-          req_data['status'] += f"Unexpected error starting GDBGUI: {e}\n"
-          return None
-      
-      req_data['status'] += f"Finished debug session: {e}\n"
-    else:
-      req_data['status'] += f"UART not connected: {e}\n"
-    return jsonify(req_data)
-          
-
-
-def kill_all_processes(process_name):
-  try:
-      if not process_name:
-          logging.error("El nombre del proceso no puede estar vacío.")
-          return 1
-
-      # Comando para obtener los PIDs de los procesos
-      get_pids_cmd = f"ps aux | grep '[{process_name[0]}]{process_name[1:]}' | awk '{{print $2}}'"
-      result = subprocess.run(get_pids_cmd, shell=True, capture_output=True, text=True)
-
-        # Si hay más de un proceso, llamar a kill_all_processes
-        if int(result.stdout.strip()) > 1:
-            print(f"Hay más procesos '{process_name}'.") 
-        
-        # Construye el comando
-        commands = f"ps aux | grep '[{process_name[0]}]{process_name[1:]}' | awk '{{print $2}}' | xargs kill -9"
-        
-        # Ejecuta el comando
-        result = subprocess.run(commands, shell=True, capture_output=True, timeout=120, check=False)  
-        # Verifica si hubo algún error en el proceso
-        if result.returncode != 0:
-            logging.error(f"Error al intentar matar los procesos {process_name}. Salida: {result.stderr.decode()}")        
-        else:
-            logging.info(f"Todos los procesos {process_name} han sido eliminados.")
-        return result.returncode 
-    
-    except subprocess.TimeoutExpired as e:
-        logging.error(f"El proceso excedió el tiempo de espera: {e}")
-        return result.returncode 
-    
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error al ejecutar el comando: {e}")
-        return result.returncode 
-    
-    except Exception as e:
-        logging.error(f"Ocurrió un error inesperado: {e}")
-
-def check_jtag_connection():
-    """ Verifica si el JTAG está conectado """
-    command = ["lsusb"]
-    try:
-        lsof = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, errs = lsof.communicate(timeout=5)  # Reduce el tiempo de espera
-        if output:
-            output_text = output.decode(errors="ignore")
-            if "JTAG" in output_text:
-                logging.info("JTAG encontrado en la salida de lsusb.")
-                return True
-            else:
-                logging.warning("No se encontró JTAG en la salida de lsusb.")
-                return False
-    except subprocess.TimeoutExpired:
-        lsof.kill()
-        output, errs = lsof.communicate()
-    except Exception as e:
-        logging.error(f"Error al verificar la conexión JTAG: {e}")
-        return None
-    return False
-
-def do_debug_request(request):
-    global stop_event
-    global process_holder
-    req_data = {'status': ''}
-    try:
-        req_data = request.get_json()
-        target_device = req_data.get('target_port', None)
-        if not target_device:
-            req_data['status'] = 'Error: target_port is missing in the request.\n'
-            return jsonify(req_data)
-
-        error = check_build()
-        if error != 0:
-            req_data['status'] += "Build error.\n"
-            return jsonify(req_data)
-        logging.debug("Delete previous work")
-        # Clean previous debug system
         if error == 0:
-            if 'openocd' in process_holder:
-                logging.debug('Killing OpenOCD')
-                kill_all_processes("openocd")
-                process_holder.pop('openocd', None)
-
-            # Check if JTAG is connected
-            if not check_jtag_connection():
-                req_data['status'] += "No JTAG found\n"
-                return jsonify(req_data)
-
-            # Start OpenOCD
-            logging.info("Starting OpenOCD...")
-            openocd_thread = start_openocd_thread(req_data)
-            while process_holder.get('openocd') is None:
-              time.sleep(1)
-              #start_openocd_thread(req_data)
-
-            # Start gdbgui   
-            #logging.info("Starting gdbgui")
-            error = start_gdbgui(req_data)
-            if error != 0:
-                req_data['status'] += "Error starting gdbgui\n"
-                return jsonify(req_data)   
-        else:
-            req_data['status'] += "Build error\n"
-            
+            error = do_cmd_output(req_data, ['idf.py','-C', BUILD_PATH,'-p',target_device,'erase-flash'])
+        if error == 0:
+            req_data['status'] += 'Erase flash done.\n'
+         
     except Exception as e:
-        req_data["status"] += str(e) + "\n"
+        req_data['status'] += str(e) + '\n'    
 
-    return jsonify(req_data)
+    return jsonify(req_data) 
 
 
 def do_stop_monitor_request(request):
@@ -885,7 +501,7 @@ def do_job_request(request):
         text_file = open("tmp_assembly.s", "w")
         ret = text_file.write(asm_code)
         text_file.close()
-        error = check_build("tmp_assembly.s")
+        error = check_build()
         # transform th temporal assembly file
         filename = BUILD_PATH + "/main/program.s"
         print("filename to transform in do_job_request: ", filename)
@@ -924,8 +540,6 @@ def do_stop_flash_request(request):
     try:
         req_data = request.get_json()
         req_data["status"] = ""
-        # Cleaning creatino
-        error = do_cmd_output(req_data, ["idf.py", "-C", "./creatino", "fullclean"])
         if error == 0:
             do_cmd(req_data, ["pkill", "idf.py"])
 
@@ -933,8 +547,6 @@ def do_stop_flash_request(request):
         req_data["status"] += str(e) + "\n"
 
     return jsonify(req_data)
-
-
 
 
 
@@ -1042,7 +654,7 @@ def kill_all_processes(process_name):
 # -------OpenOCD Function
 def start_openocd_thread(req_data):
     target_board = req_data["target_board"]
-    route = BUILD_PATH + "/openocd_scripts/openscript_" + target_board + ".cfg"
+    route = "./openocd_scripts/openscript_" + target_board + ".cfg"
     logging.debug(f"OpenOCD route: {route}")
     try:
         thread = threading.Thread(
